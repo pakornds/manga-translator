@@ -328,7 +328,7 @@ def fit_and_wrap_text(
     font_path,
     max_width,
     max_height,
-    start_size=60,
+    start_size=48,
     min_size=14,
     line_spacing=0,
     tone_mark_scale=1.0,
@@ -602,7 +602,8 @@ def draw_translated_text_in_boxes(
         box_w = x1 - x0
         box_h = y1 - y0
         # Start with a slightly smaller size than the box dimensions to leave some margin
-        start_size = max(14, int(box_h * 0.9))
+        # start_size = max(14, int(box_h * 0.8))
+        start_size = 72
         font, lines, line_h, line_step = fit_and_wrap_text(
             draw,
             translated,
