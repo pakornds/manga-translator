@@ -1,0 +1,9 @@
+streamlit
+requests
+Pillow
+pdf2image
+tqdm
+google-genai
+pandas
+matplotlib
+qwen-vl-utils

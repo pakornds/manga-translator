@@ -1,5 +1,23 @@
 # manga-translator
 
+## Installation
+
+Please install Poppler to enable PDF processing depending on your OS:
+
+### Windows
+- Download and install from: https://github.com/oschwartz10612/poppler-windows
+- Extract the zip file and add the `bin` folder to your system PATH.
+
+### Linux (Ubuntu/Debian)
+```bash
+sudo apt-get install poppler-utils
+```
+
+### macOS
+```bash
+brew install poppler
+```
+
 ## Citation
 
 ```

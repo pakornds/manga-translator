@@ -1,4 +1,8 @@
 .env
-jp_to_eng_mapping.csv
 ocr.ipynb
 eng_to_thai.ipynb
+__pycache__/
+images/
+*.csv
+output_results/
+pdfs/
