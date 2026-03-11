@@ -7,3 +7,4 @@ google-genai
 pandas
 matplotlib
 qwen-vl-utils
+pythainlp

@@ -290,31 +290,44 @@ def compute_line_metrics(draw, font, line_spacing=0, tone_mark_scale=1.0):
 
 def wrap_text_for_box(draw, text, font, max_width):
     """
-    Wrap text by character so lines fit inside max_width. No height limits here.
+    Wrap Thai text at word boundaries using PyThaiNLP newmm tokenization.
+
+    Breaking at word boundaries (rather than raw characters or TCC clusters)
+    produces more natural, readable lines.  font.getlength() is used for
+    sub-pixel-accurate measurement.  Falls back to whitespace splitting when
+    pythainlp is unavailable.
 
     Args:
-        draw (PIL.ImageDraw.Draw): The drawing context.
+        draw (PIL.ImageDraw.Draw): The drawing context (unused, kept for
+            interface compatibility).
         text (str): The text to wrap.
         font (PIL.ImageFont.FreeTypeFont): The font to use for measurement.
-        max_width (int): The maximum width of a line.
+        max_width (int): The maximum width of a line in pixels.
 
     Returns:
-        list: The list of text lines.
+        list: The list of wrapped text lines.
     """
     if not text:
         return []
 
+    try:
+        from pythainlp import word_tokenize
+
+        words = word_tokenize(text, engine="newmm")
+    except ImportError:
+        words = text.split() or [text]
+
     lines = []
     current = ""
 
-    for ch in text:
-        candidate = current + ch
-        cand_w, _ = text_size(draw, candidate, font)
-        if cand_w <= max_width or not current:
+    for word in words:
+        candidate = current + word
+        if font.getlength(candidate) <= max_width:
             current = candidate
         else:
-            lines.append(current)
-            current = ch
+            if current:
+                lines.append(current)
+            current = word
 
     if current:
         lines.append(current)
@@ -891,11 +904,11 @@ def main():
 
         if api_input_mode == "Base URL + paths":
             ocr_base_api_url = st.text_input(
-                "OCR Base API URL", value="https://7aea-34-73-131-134.ngrok-free.app"
+                "OCR Base API URL", value="https://11c7-34-61-240-35.ngrok-free.app"
             ).strip()
             translation_base_api_url = st.text_input(
                 "Translation Base API URL",
-                value="https://d722-136-116-85-108.ngrok-free.app",
+                value="https://c13e-34-81-83-63.ngrok-free.app",
             ).strip()
             ocr_api_path = st.text_input("OCR path", value="/predict").strip()
             translation_api_path = st.text_input(

@@ -1,4 +1,5 @@
 .env
+.venv/
 ocr.ipynb
 eng_to_thai.ipynb
 __pycache__/
