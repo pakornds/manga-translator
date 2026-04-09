@@ -371,9 +371,13 @@ def fit_and_wrap_text(
         )
         lines = wrap_text_for_box(draw, text, font, max_width)
         total_h = line_h + (max(1, len(lines)) - 1) * line_step
-        too_wide = any(text_size(draw, ln, font)[0] > max_width for ln in lines if ln)
+        too_wide = any(
+            text_size(draw, ln, font)[0] > max_width for ln in lines if ln
+        )  # Does any single word exceed the max_width?
 
-        if lines and (not too_wide) and total_h <= max_height:
+        if (
+            lines and (not too_wide) and total_h <= max_height
+        ):  # Does the accumulated height of all wrapped lines exceed the bubble's capacity?
             # We found a fitting size! Decrease it by 4 for a safety margin.
             final_size = max(min_size, size - 6)
             if final_size != size:
@@ -506,7 +510,7 @@ def fill_boxes_with_white(image, ocr_blocks, padding=8, right_extra=0):
         x0 = max(0, x0 - padding)
         y0 = max(0, y0 - padding)
         x1 = min(w - 1, x1 + padding + max(0, int(right_extra)))
-        y1 = min(h - 1, y1 + padding)
+        y1 = min(h - 1, y1 + padding + 3)
 
         if x1 > x0 and y1 > y0:
             draw.rectangle([x0, y0, x1, y1], fill="white")
@@ -601,22 +605,37 @@ def draw_translated_text_in_boxes(
         x0 = max(0, x0 - padding)
         y0 = max(0, y0 - top_padding)
         x1 = min(w - 1, x1 + padding + max(0, int(right_padding_extra)))
-        y1 = min(h - 1, y1 + padding)
+        y1 = min(h - 1, y1 + padding + 3)
 
         if x1 <= x0 or y1 <= y0:
             continue
 
+        box_w = x1 - x0
+        box_h = y1 - y0
+
+        # Fill the original (padded) box first to erase the Japanese text.
         dark_box = is_dark_box(source_for_color, (x0, y0, x1, y1))
-        # Invert text/background in dark regions for readability.
         bg_fill = "black" if dark_box else "white"
         text_fill = "white" if dark_box else "black"
         draw.rectangle([x0, y0, x1, y1], fill=bg_fill)
 
-        box_w = x1 - x0
-        box_h = y1 - y0
-        # Start with a slightly smaller size than the box dimensions to leave some margin
-        # start_size = max(14, int(box_h * 0.8))
-        start_size = 72
+        # Vertical Japanese text boxes are narrow columns where height is at
+        # least 2× the width (e.g. a single stack of kanji ~25×150 px).
+        # Normal speech bubbles have a ratio closer to 1:1, so a threshold of
+        # 2.0 avoids widening ordinary bubbles that happen to be slightly tall.
+        if box_w > 0 and (box_h / box_w) >= 3.5:
+            cx = (x0 + x1) // 2
+            half = max(box_w, box_h) // 4
+            x0 = max(0, cx - half)
+            x1 = min(w - 1, cx + half)
+            box_w = x1 - x0
+            # Redraw the full expanded box so both the newly added left and
+            # right margins are filled with the same background colour.
+            draw.rectangle([x0, y0, x1, y1], fill=bg_fill)
+
+        # Seed the font-size search from the box height so large boxes get
+        # large text and small boxes don't waste iterations shrinking from 72.
+        start_size = max(14, int(box_h * 0.8))
         font, lines, line_h, line_step = fit_and_wrap_text(
             draw,
             translated,
@@ -647,7 +666,7 @@ def draw_translated_text_in_boxes(
         # This leaves exactly 20 pixels of empty space on the left side, and 20 pixels of empty space on the right side (100 - 80).
         # The text is now perfectly centered! 60 pixels of text are perfectly in the middle.
 
-        # Calculate total height of the text block to center vertically
+        # Calculate total height of the text block to center vertically, find empty space
         total_text_h = line_h + (len(lines) - 1) * line_step
         start_y = y0 + max(0, (box_h - total_text_h) // 2)
 
@@ -656,7 +675,7 @@ def draw_translated_text_in_boxes(
             if y + line_h > y1 and y != start_y:
                 break
 
-            # Calculate width of the current line to center horizontally
+            # Calculate width of the current line to center horizontally, find empty space
             line_w, _ = text_size(draw, line, font)
             line_x = x0 + max(0, (box_w - line_w) // 2)
 
@@ -904,11 +923,11 @@ def main():
 
         if api_input_mode == "Base URL + paths":
             ocr_base_api_url = st.text_input(
-                "OCR Base API URL", value="https://11c7-34-61-240-35.ngrok-free.app"
+                "OCR Base API URL", value="https://f4e4-34-11-36-230.ngrok-free.app"
             ).strip()
             translation_base_api_url = st.text_input(
                 "Translation Base API URL",
-                value="https://c13e-34-81-83-63.ngrok-free.app",
+                value="https://f1c4-34-63-163-234.ngrok-free.app",
             ).strip()
             ocr_api_path = st.text_input("OCR path", value="/predict").strip()
             translation_api_path = st.text_input(
@@ -939,7 +958,7 @@ def main():
             "Box Padding", min_value=0, max_value=50, value=8, step=1
         )
         ocr_connect_timeout = st.number_input(
-            "OCR Connect Timeout (s)", min_value=5, max_value=120, value=20, step=1
+            "OCR Connect Timeout (s)", min_value=5, max_value=120, value=30, step=1
         )
         ocr_read_timeout = st.number_input(
             "OCR Read Timeout (s)", min_value=30, max_value=1800, value=300, step=30
