@@ -1,7 +1,7 @@
 [project]
 name = "manga-translator"
 version = "0.1.0"
-description = "Add your description here"
+description = "Translates Japanese manga pages into Thai with MangaLMM and a fine-tuned Qwen3 model"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
