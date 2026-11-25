@@ -1,5 +1,11 @@
 # manga-translator
 
+Translates Japanese manga pages into Thai. The system finds speech bubbles and reading order with MangaLMM (Qwen2.5-VL), translates the text with a fine-tuned Qwen3 model, and renders the Thai text back onto the page. A Streamlit app runs the pipeline on PDFs and images.
+
+## Paper
+
+An End-to-End AI System for Translating Japanese Manga into Thai (IEEE Xplore): https://ieeexplore.ieee.org/document/11608395
+
 ## Installation
 
 Please install Poppler to enable PDF processing depending on your OS:
